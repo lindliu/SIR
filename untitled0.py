@@ -6,15 +6,20 @@ Created on Tue Mar 15 13:33:28 2022
 @author: do0236li
 """
 
+###https://github.com/covid19-eu-zh/covid19-eu-data
+
 import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 init = 0
 
-path = os.path.join(os.getcwd(), './Covid_19/EU_dataset/covid-19-de.csv')
+path = os.path.join(os.getcwd(), './Covid_19/EU_dataset/covid-19-at.csv')
 dataframe = pd.read_csv(path,sep=',')
+dataframe = dataframe.dropna()
+dataframe.columns
 
 ### data cleaning ###
 data = dataframe.to_numpy()
@@ -24,9 +29,9 @@ for i in range(data.shape[0]):
     
 print(np.unique(data[:,1]))
 # print(np.where(data[:,1]!='Repatriierte'))
-data = data[data[:,1]!='Repatriierte',:]
+# data = data[data[:,1]!='Repatriierte',:]
 
-covid_data = np.zeros([data.shape[0],4], dtype=np.int32)
+covid_data = np.zeros([data.shape[0],5], dtype=np.int32)
 states = np.unique(data[:,1])
 states_dict = []
 for state in states:
@@ -36,23 +41,28 @@ states_dict = dict(states_dict)
 
 for state,idx in states_dict.items():
     covid_data[data[:,1]==state, 0] = idx #index of area
-    covid_data[data[:,1]==state, 1] = data[data[:,1]==state, 2] #infected
-    covid_data[data[:,1]==state, 2] = data[data[:,1]==state, 4] #death
-    covid_data[data[:,1]==state, 3] = data[data[:,1]==state, 5] #time
+    covid_data[data[:,1]==state, 1] = data[data[:,1]==state, 8] #time
+    covid_data[data[:,1]==state, 2] = dataframe.loc[dataframe.nuts_2==state].cases #infected
+    covid_data[data[:,1]==state, 3] = dataframe.loc[dataframe.nuts_2==state].recovered #recovered
+    covid_data[data[:,1]==state, 4] = dataframe.loc[dataframe.nuts_2==state].deaths #death
+
 
 covid_data_s = covid_data[np.argsort(covid_data[:,0]),:] #sorted by index of area
 for value in states_dict.values():
     idx_ = np.where(covid_data_s[:,0]==value)[0]
-    covid_data_s[idx_,:] = covid_data_s[idx_[np.argsort(covid_data_s[idx_, 3])],:]
+    covid_data_s[idx_,:] = covid_data_s[idx_[np.argsort(covid_data_s[idx_, 1])],:]
     
-# plt.plot(covid_data_s[covid_data_s[:,0]==6, 3][:-1], covid_data_s[covid_data_s[:,0]==6, 1][1:]-covid_data_s[covid_data_s[:,0]==6, 1][:-1])
+# plt.plot(covid_data_s[covid_data_s[:,0]==6, 3])
 
 
 
 
 
 ## https://www.ecdc.europa.eu/en/covid-19/data
+import os
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from datetime import date, timedelta
 
 path = os.path.join(os.getcwd(), './Covid_19/data.csv')
@@ -92,7 +102,7 @@ edate = date(eyear,emonth,eday)   # end date
 date_list = [int(i) for i in pd.date_range(sdate,edate-timedelta(days=1),freq='d').strftime('%Y%m%d').to_list()]
 np.repeat(date_list,len(country_dict),axis=0)
 
-covid_data_ = np.zeros([len(date_list)*len(country_dict),4], dtype=np.int32)
+covid_data_ = np.zeros([len(date_list)*len(country_dict),4], dtype=np.float32)
 covid_data_[:,0] = np.repeat(list(country_dict.values()), len(date_list), axis=0)
 covid_data_[:,1] = np.repeat(np.array(date_list).reshape([1,-1]), len(country_dict), axis=0).flatten()
 for i in range(covid_data_.shape[0]):
@@ -119,14 +129,21 @@ for state in country_dict.values():
     covid_data_m[covid_data_[:,0]==state,3] = np.convolve(np.ones(7)/7, covid_data_[covid_data_[:,0]==state,3],'same')
 
 plt.figure(2)
-idx=covid_data_[:,0]==10#country_dict['AUT']
+idx=covid_data_m[:,0]==7#country_dict['AUT']
 plt.plot(covid_data_[idx, 2])
 plt.plot(covid_data_m[idx, 2])
 
 
 
+# covid_data_m[]
 
 
+daily_cases = covid_data_m[:,2].reshape([-1,(covid_data_m[:,0]==0).sum()])
+plt.figure(3)
+plt.plot(daily_cases[7,:])
+
+plt.figure(4)
+plt.plot(daily_cases[:,1:]-daily_cases[:,:-1])
 
 
 
