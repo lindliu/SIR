@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 init = 0
 
-path = os.path.join(os.getcwd(), '../data/Covid_19/EU_dataset/covid-19-de.csv')
+path = os.path.join(os.getcwd(), './Covid_19/EU_dataset/covid-19-de.csv')
 dataframe = pd.read_csv(path,sep=',')
 
 ### data cleaning ###
@@ -55,7 +55,7 @@ for value in states_dict.values():
 import pandas as pd
 from datetime import date, timedelta
 
-path = os.path.join(os.getcwd(), '../data/Covid_19/data.csv')
+path = os.path.join(os.getcwd(), './Covid_19/data.csv')
 dataframe = pd.read_csv(path,sep=',')
 dataframe = dataframe.dropna()
 dataframe.columns
